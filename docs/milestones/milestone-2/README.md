@@ -12,6 +12,8 @@ Enable vendors to manage products, inventory, translations, and pricing with Pri
 - Added server action for create and update product flows
 - Added inventory and current-price persistence
 - Added price-history creation on product save
+- Added product image syncing from vendor-managed image URLs
+- Added product image previews across vendor and storefront catalog pages
 - Added category-driven product assignment
 - Added vendor dashboard metrics and quick actions
 - Extended seed data with default categories and a demo product
@@ -31,3 +33,4 @@ Enable vendors to manage products, inventory, translations, and pricing with Pri
 - Vendor CRUD flow is connected to Prisma
 - Product translations support English and Urdu
 - Inventory and pricing can be updated from vendor screens
+- Product image URLs now surface consistently in vendor and storefront views

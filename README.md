@@ -5,6 +5,7 @@
 The project is no longer just a blueprint. The current codebase already includes:
 
 - role-based authentication with customer, vendor, and admin access
+- self-service customer and vendor registration
 - localized English and Urdu UI scaffolding with a locale switcher
 - vendor dashboard foundation with product, pricing, inventory, and order workflows
 - storefront browsing with vendor pages and product detail pages
@@ -129,6 +130,7 @@ The storefront launches in `English` and `Urdu`, so a proper i18n layer is neces
 
 #### Customer
 
+- register and sign in
 - browse products
 - search and filter products
 - add products to cart
@@ -140,9 +142,10 @@ The storefront launches in `English` and `Urdu`, so a proper i18n layer is neces
 
 #### Vendor
 
+- register and wait for admin approval
 - manage shop profile
 - create and edit products
-- upload product images
+- attach product image URLs for storefront display
 - update stock by unit
 - update daily prices
 - manage orders
@@ -209,7 +212,7 @@ The storefront launches in `English` and `Urdu`, so a proper i18n layer is neces
 ### 1. Authentication and Authorization
 
 - customer login and registration
-- vendor login
+- vendor login and registration with admin approval
 - admin login
 - role-based access control
 
@@ -361,6 +364,12 @@ This step creates the admin user and optionally vendor and customer demo account
 ```bash
 npm run db:seed
 ```
+
+Self-service registration is also available in the running app:
+
+- customers can register and become active immediately
+- vendors can register and create a pending account that must be approved from `admin/vendors`
+- the seed script is still useful for creating demo accounts quickly in local development
 
 ### 7. Start the development server
 
