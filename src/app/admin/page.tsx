@@ -1,15 +1,12 @@
-import { requireRole } from "@/lib/auth";
+import Link from "next/link";
 
-const adminModules = [
-  "Vendor approval and lifecycle management",
-  "Commission settings and payout reporting",
-  "Platform-wide orders and payment monitoring",
-  "Catalog governance and category management",
-  "Growth, revenue, and vendor performance dashboards",
-];
+import { StatusChart } from "@/components/charts/status-chart";
+import { requireRole } from "@/lib/auth";
+import { formatCurrency, getAdminChartData, getAdminSummary } from "@/lib/marketplace";
 
 export default async function AdminPage() {
   const session = await requireRole(["ADMIN"]);
+  const [summary, chartData] = await Promise.all([getAdminSummary(), getAdminChartData()]);
 
   return (
     <main className="mx-auto min-h-screen max-w-6xl px-6 py-12 lg:px-10">
@@ -28,13 +25,73 @@ export default async function AdminPage() {
           Signed in as {session.user.email} with role {session.user.role}.
         </p>
 
+        <div className="mt-8 grid gap-4 md:grid-cols-4">
+          <div className="rounded-2xl border border-border bg-background p-5">
+            <p className="text-sm text-muted">Vendors</p>
+            <p className="mt-2 text-2xl font-semibold text-brand-dark">{summary.vendors}</p>
+          </div>
+          <div className="rounded-2xl border border-border bg-background p-5">
+            <p className="text-sm text-muted">Pending approvals</p>
+            <p className="mt-2 text-2xl font-semibold text-brand-dark">{summary.pendingVendors}</p>
+          </div>
+          <div className="rounded-2xl border border-border bg-background p-5">
+            <p className="text-sm text-muted">Orders</p>
+            <p className="mt-2 text-2xl font-semibold text-brand-dark">{summary.orders}</p>
+          </div>
+          <div className="rounded-2xl border border-border bg-background p-5">
+            <p className="text-sm text-muted">Commission earned</p>
+            <p className="mt-2 text-2xl font-semibold text-brand-dark">
+              {formatCurrency(summary.commissionTotal)}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="rounded-[28px] bg-background p-6">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-xl font-semibold text-brand-dark">Revenue by order status</h2>
+              <Link className="text-sm font-semibold text-brand" href="/admin/orders">
+                Review orders
+              </Link>
+            </div>
+            <div className="mt-4">
+              <StatusChart data={chartData} color="#33427c" />
+            </div>
+          </div>
+
+          <div className="rounded-[28px] bg-background p-6">
+            <h2 className="text-xl font-semibold text-brand-dark">Admin modules</h2>
+            <div className="mt-4 grid gap-3">
+              {[
+                { href: "/admin/vendors", label: "Vendor approvals and lifecycle management" },
+                { href: "/admin/categories", label: "Category governance and catalog management" },
+                { href: "/admin/orders", label: "Platform orders and payment monitoring" },
+                { href: "/vendor", label: "Preview vendor panel" },
+              ].map((module) => (
+                <Link
+                  key={module.href}
+                  href={module.href}
+                  className="rounded-2xl border border-border bg-white p-4 font-medium text-brand-dark transition hover:bg-[#eef1fb]"
+                >
+                  {module.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+
         <div className="mt-8 grid gap-4 md:grid-cols-2">
-          {adminModules.map((module) => (
+          {summary.recentOrders.map((order) => (
             <div
-              key={module}
+              key={order.id}
               className="rounded-2xl border border-border bg-background p-5"
             >
-              <p className="font-medium text-brand-dark">{module}</p>
+              <p className="font-medium text-brand-dark">
+                {order.orderNumber} · {order.vendor.businessName}
+              </p>
+              <p className="mt-2 text-sm text-muted">
+                {order.customer.user?.email ?? "Customer"} · {order.status}
+              </p>
             </div>
           ))}
         </div>
