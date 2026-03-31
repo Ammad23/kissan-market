@@ -1,11 +1,64 @@
 import "dotenv/config";
 
-import { PrismaClient, UserRole, VendorStatus, CommissionType } from "@prisma/client";
+import {
+  PrismaClient,
+  UserRole,
+  VendorStatus,
+  CommissionType,
+  Locale,
+  ProductUnit,
+} from "@prisma/client";
 import { hash } from "bcryptjs";
 
 const prisma = new PrismaClient();
 
 async function main() {
+  const categoryRecords = await Promise.all(
+    [
+      {
+        slug: "vegetables",
+        sortOrder: 1,
+        translations: [
+          { locale: Locale.EN, name: "Vegetables", description: "Fresh daily vegetables" },
+          { locale: Locale.UR, name: "سبزیاں", description: "تازہ روزانہ سبزیاں" },
+        ],
+      },
+      {
+        slug: "fruits",
+        sortOrder: 2,
+        translations: [
+          { locale: Locale.EN, name: "Fruits", description: "Seasonal fruit collections" },
+          { locale: Locale.UR, name: "پھل", description: "موسمی پھل" },
+        ],
+      },
+      {
+        slug: "grains",
+        sortOrder: 3,
+        translations: [
+          { locale: Locale.EN, name: "Grains", description: "Sacks and staple crops" },
+          { locale: Locale.UR, name: "اناج", description: "اناج اور بوریاں" },
+        ],
+      },
+    ].map((category) =>
+      prisma.category.upsert({
+        where: { slug: category.slug },
+        update: {
+          sortOrder: category.sortOrder,
+        },
+        create: {
+          slug: category.slug,
+          sortOrder: category.sortOrder,
+          translations: {
+            create: category.translations,
+          },
+        },
+        include: {
+          translations: true,
+        },
+      }),
+    ),
+  );
+
   const adminEmail = process.env.ADMIN_EMAIL;
   const adminPassword = process.env.ADMIN_PASSWORD;
   const adminName = process.env.ADMIN_NAME ?? "KISSAN Admin";
@@ -62,7 +115,7 @@ async function main() {
       },
     });
 
-    await prisma.vendor.upsert({
+    const vendorProfile = await prisma.vendor.upsert({
       where: { userId: vendorUser.id },
       update: {
         businessName: vendorBusinessName,
@@ -78,6 +131,78 @@ async function main() {
         supportsPickup: true,
         supportsDelivery: true,
         status: VendorStatus.APPROVED,
+      },
+    });
+
+    const produceCategory =
+      categoryRecords.find((item) => item.slug === "vegetables") ?? categoryRecords[0];
+
+    const demoProduct = await prisma.product.upsert({
+      where: { sku: "KISSAN-TOMATO-001" },
+      update: {
+        vendorId: vendorProfile.id,
+        categoryId: produceCategory.id,
+        defaultUnit: ProductUnit.KG,
+        isActive: true,
+      },
+      create: {
+        vendorId: vendorProfile.id,
+        categoryId: produceCategory.id,
+        slug: "farm-fresh-tomatoes",
+        sku: "KISSAN-TOMATO-001",
+        defaultUnit: ProductUnit.KG,
+        isActive: true,
+        isFeatured: true,
+        translations: {
+          create: [
+            {
+              locale: Locale.EN,
+              name: "Farm Fresh Tomatoes",
+              shortDescription: "Daily-picked tomatoes for household and bulk orders",
+              description: "Fresh tomatoes managed by the demo vendor with daily pricing.",
+            },
+            {
+              locale: Locale.UR,
+              name: "تازہ ٹماٹر",
+              shortDescription: "روزانہ تازہ ٹماٹر",
+              description: "نمائشی وینڈر کے لئے تازہ ٹماٹر۔",
+            },
+          ],
+        },
+      },
+    });
+
+    await prisma.inventory.upsert({
+      where: { productId: demoProduct.id },
+      update: {
+        quantityAvailable: 120,
+        unit: ProductUnit.KG,
+        lowStockThreshold: 20,
+        isInStock: true,
+      },
+      create: {
+        productId: demoProduct.id,
+        quantityAvailable: 120,
+        unit: ProductUnit.KG,
+        lowStockThreshold: 20,
+        isInStock: true,
+      },
+    });
+
+    await prisma.productCurrentPrice.upsert({
+      where: {
+        productId_unit: {
+          productId: demoProduct.id,
+          unit: ProductUnit.KG,
+        },
+      },
+      update: {
+        price: 220,
+      },
+      create: {
+        productId: demoProduct.id,
+        unit: ProductUnit.KG,
+        price: 220,
       },
     });
   }
@@ -113,6 +238,50 @@ async function main() {
         userId: customer.id,
       },
     });
+
+    const customerProfile = await prisma.customerProfile.findUnique({
+      where: { userId: customer.id },
+    });
+
+    if (customerProfile) {
+      const existingAddress = await prisma.customerAddress.findFirst({
+        where: { customerId: customerProfile.id, isDefault: true },
+      });
+
+      const defaultAddress = existingAddress
+        ? await prisma.customerAddress.update({
+            where: { id: existingAddress.id },
+            data: {
+              fullName: customerName,
+              phone: "03000000000",
+              addressLine1: "Demo Street 12",
+              city: "Lahore",
+              area: "Model Town",
+              postalCode: "54000",
+              isDefault: true,
+            },
+          })
+        : await prisma.customerAddress.create({
+            data: {
+              customerId: customerProfile.id,
+              label: "Home",
+              fullName: customerName,
+              phone: "03000000000",
+              addressLine1: "Demo Street 12",
+              city: "Lahore",
+              area: "Model Town",
+              postalCode: "54000",
+              isDefault: true,
+            },
+          });
+
+      await prisma.customerProfile.update({
+        where: { id: customerProfile.id },
+        data: {
+          defaultAddressId: defaultAddress.id,
+        },
+      });
+    }
   }
 
   console.log("Seed completed successfully.");

@@ -1,15 +1,26 @@
-import { requireRole } from "@/lib/auth";
+import Link from "next/link";
 
-const vendorModules = [
-  "Products and localized descriptions",
-  "Inventory by kg, bag, piece, or bundle",
-  "Daily price updates with history",
-  "Orders, pickup, and vendor delivery",
-  "Sales analytics and low-stock insights",
-];
+import { StatusChart } from "@/components/charts/status-chart";
+import { requireApprovedVendor } from "@/lib/auth";
+import {
+  formatCurrency,
+  getVendorChartData,
+  getVendorOrders,
+  getVendorProducts,
+} from "@/lib/marketplace";
 
 export default async function VendorPage() {
-  const session = await requireRole(["VENDOR", "ADMIN"]);
+  const { session, user } = await requireApprovedVendor();
+  const [products, orders, chartData] = await Promise.all([
+    getVendorProducts(),
+    getVendorOrders(),
+    getVendorChartData(),
+  ]);
+  const lowStock = products.filter((product) => {
+    const threshold = Number(product.inventory?.lowStockThreshold ?? 0);
+    return product.inventory && Number(product.inventory.quantityAvailable) <= threshold;
+  });
+  const revenue = orders.reduce((sum, order) => sum + Number(order.totalAmount), 0);
 
   return (
     <main className="mx-auto min-h-screen max-w-6xl px-6 py-12 lg:px-10">
@@ -28,14 +39,78 @@ export default async function VendorPage() {
           Signed in as {session.user.email} with role {session.user.role}.
         </p>
 
-        <div className="mt-8 grid gap-4 md:grid-cols-2">
-          {vendorModules.map((module) => (
-            <div
-              key={module}
-              className="rounded-2xl border border-border bg-background p-5"
-            >
-              <p className="font-medium text-brand-dark">{module}</p>
+        <div className="mt-8 grid gap-4 md:grid-cols-4">
+          <div className="rounded-2xl border border-border bg-background p-5">
+            <p className="text-sm text-muted">Products</p>
+            <p className="mt-2 text-2xl font-semibold text-brand-dark">{products.length}</p>
+          </div>
+          <div className="rounded-2xl border border-border bg-background p-5">
+            <p className="text-sm text-muted">Orders</p>
+            <p className="mt-2 text-2xl font-semibold text-brand-dark">{orders.length}</p>
+          </div>
+          <div className="rounded-2xl border border-border bg-background p-5">
+            <p className="text-sm text-muted">Low stock items</p>
+            <p className="mt-2 text-2xl font-semibold text-brand-dark">{lowStock.length}</p>
+          </div>
+          <div className="rounded-2xl border border-border bg-background p-5">
+            <p className="text-sm text-muted">Revenue</p>
+            <p className="mt-2 text-2xl font-semibold text-brand-dark">{formatCurrency(revenue)}</p>
+          </div>
+        </div>
+
+        <div className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="rounded-[28px] bg-background p-6">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-xl font-semibold text-brand-dark">Order pipeline</h2>
+              <Link className="text-sm font-semibold text-brand" href="/vendor/orders">
+                Manage orders
+              </Link>
             </div>
+            <div className="mt-4">
+              <StatusChart data={chartData} />
+            </div>
+          </div>
+
+          <div className="rounded-[28px] bg-background p-6">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-xl font-semibold text-brand-dark">Quick actions</h2>
+              <span className="text-sm text-muted">{user.vendorProfile?.businessName}</span>
+            </div>
+            <div className="mt-4 grid gap-3">
+              {[
+                { href: "/vendor/products", label: "View products" },
+                { href: "/vendor/products/new", label: "Add product" },
+                { href: "/vendor/orders", label: "Process orders" },
+                { href: "/shop", label: "Preview storefront" },
+              ].map((action) => (
+                <Link
+                  key={action.href}
+                  href={action.href}
+                  className="rounded-2xl border border-border bg-white px-4 py-3 font-medium text-brand-dark transition hover:bg-[#eef3e4]"
+                >
+                  {action.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8 grid gap-4 md:grid-cols-2">
+          {products.slice(0, 6).map((product) => (
+            <Link
+              key={product.id}
+              href={`/vendor/products/${product.id}`}
+              className="rounded-2xl border border-border bg-background p-5 transition hover:shadow-sm"
+            >
+              <p className="font-medium text-brand-dark">
+                {product.translations.find((item) => item.locale === "EN")?.name ?? product.slug}
+              </p>
+              <p className="mt-2 text-sm text-muted">
+                {product.inventory
+                  ? `${product.inventory.quantityAvailable.toString()} ${product.inventory.unit} in stock`
+                  : "Inventory not configured"}
+              </p>
+            </Link>
           ))}
         </div>
       </div>
