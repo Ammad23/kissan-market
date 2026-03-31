@@ -2,7 +2,13 @@ import Link from "next/link";
 import { getLocale } from "next-intl/server";
 
 import { addToCartAction } from "@/app/actions/marketplace";
-import { formatCurrency, formatNumber, getActiveCategories, getStorefrontProducts } from "@/lib/marketplace";
+import {
+  formatCurrency,
+  formatNumber,
+  getActiveCategories,
+  getProductPrimaryImage,
+  getStorefrontProducts,
+} from "@/lib/marketplace";
 
 type ShopPageProps = {
   searchParams?: Promise<{
@@ -95,12 +101,27 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
             const translation = product.translations[0] ?? product.translations[1];
             const categoryTranslation = product.category.translations[0];
             const price = product.currentPrices[0];
+            const productImage = getProductPrimaryImage(product);
 
             return (
               <article
                 key={product.id}
                 className="rounded-[28px] border border-border bg-background p-6 shadow-sm"
               >
+                <div className="mb-5 h-52 overflow-hidden rounded-[24px] bg-white">
+                  {productImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={productImage}
+                      alt={translation?.name ?? product.slug}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-sm font-medium text-muted">
+                      No product image
+                    </div>
+                  )}
+                </div>
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-sm font-medium text-brand">

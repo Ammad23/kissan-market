@@ -6,9 +6,13 @@ import { useRouter } from "next/navigation";
 
 type LoginFormProps = {
   callbackUrl?: string;
+  message?: string;
 };
 
-export function LoginForm({ callbackUrl = "/auth/landing" }: LoginFormProps) {
+export function LoginForm({
+  callbackUrl = "/auth/landing",
+  message = "",
+}: LoginFormProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -69,6 +73,12 @@ export function LoginForm({ callbackUrl = "/auth/landing" }: LoginFormProps) {
           required
         />
       </div>
+
+      {message ? (
+        <p className="rounded-2xl bg-[#edf7ea] px-4 py-3 text-sm text-[#2d6b3f]">
+          {message}
+        </p>
+      ) : null}
 
       {error ? (
         <p className="rounded-2xl bg-[#fff1ee] px-4 py-3 text-sm text-[#9b3d2e]">

@@ -2,7 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLocale } from "next-intl/server";
 
-import { formatCurrency, formatNumber, getVendorStorefront } from "@/lib/marketplace";
+import {
+  formatCurrency,
+  formatNumber,
+  getProductPrimaryImage,
+  getVendorStorefront,
+} from "@/lib/marketplace";
 
 type VendorStorefrontPageProps = {
   params: Promise<{
@@ -65,12 +70,27 @@ export default async function VendorStorefrontPage({ params }: VendorStorefrontP
             const translation = product.translations[0];
             const categoryTranslation = product.category.translations[0];
             const price = product.currentPrices[0];
+            const productImage = getProductPrimaryImage(product);
 
             return (
               <article
                 key={product.id}
                 className="rounded-[28px] border border-border bg-background p-6 shadow-sm"
               >
+                <div className="mb-4 h-48 overflow-hidden rounded-[24px] bg-white">
+                  {productImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={productImage}
+                      alt={translation?.name ?? product.slug}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-sm font-medium text-muted">
+                      No product image
+                    </div>
+                  )}
+                </div>
                 <p className="text-sm font-medium text-brand">
                   {categoryTranslation?.name ?? product.category.slug}
                 </p>

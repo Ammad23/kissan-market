@@ -1,5 +1,38 @@
 # KISSAN Blueprint
 
+## Current Implementation Status
+
+The project is no longer just a blueprint. The current codebase already includes:
+
+- role-based authentication with customer, vendor, and admin access
+- localized English and Urdu UI scaffolding with a locale switcher
+- vendor dashboard foundation with product, pricing, inventory, and order workflows
+- storefront browsing with vendor pages and product detail pages
+- customer cart, checkout, account, and order pages
+- admin dashboards for vendors, categories, and platform orders
+- Prisma migration support and seed data for local development
+
+## Documentation Guide
+
+Use these files depending on what you need:
+
+- `README.md`: project blueprint, architecture, product scope, and local run steps
+- `docs/SEEDING.md`: demo account details and seeding behavior
+- `docs/POSTGRESQL_SETUP.md`: PostgreSQL installation and local database setup
+- `docs/launch-checklist.md`: staging and release readiness
+- `docs/milestones/README.md`: milestone index
+
+## Implemented Milestones
+
+The MVP roadmap has been implemented in milestone-based commits. Each milestone has a dedicated change log:
+
+- `docs/milestones/milestone-1/README.md`
+- `docs/milestones/milestone-2/README.md`
+- `docs/milestones/milestone-3/README.md`
+- `docs/milestones/milestone-4/README.md`
+- `docs/milestones/milestone-5/README.md`
+- `docs/milestones/milestone-6/README.md`
+
 ## Project Summary
 
 KISSAN is a Pakistan-focused multi-vendor agriculture marketplace with:

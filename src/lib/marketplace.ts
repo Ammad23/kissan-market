@@ -32,6 +32,13 @@ export function formatNumber(value: number | string | Prisma.Decimal) {
   return numberFormatter.format(Number(value));
 }
 
+export function getProductPrimaryImage(product: {
+  imageUrl?: string | null;
+  images?: Array<{ url: string }>;
+}) {
+  return product.imageUrl ?? product.images?.[0]?.url ?? null;
+}
+
 export function getLocaleEnum(locale: string) {
   return locale === "ur" ? Locale.UR : Locale.EN;
 }
@@ -103,6 +110,9 @@ export const getStorefrontProducts = cache(
         },
         currentPrices: true,
         inventory: true,
+        images: {
+          orderBy: { sortOrder: "asc" },
+        },
       },
       orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
     });
@@ -143,6 +153,9 @@ export const getVendorStorefront = cache(async (slug: string, locale: string) =>
           translations: { where: { locale: localeEnum } },
           currentPrices: true,
           inventory: true,
+          images: {
+            orderBy: { sortOrder: "asc" },
+          },
           category: {
             include: {
               translations: { where: { locale: localeEnum } },
@@ -178,6 +191,9 @@ export const getVendorProducts = cache(async () => {
       translations: true,
       currentPrices: true,
       inventory: true,
+      images: {
+        orderBy: { sortOrder: "asc" },
+      },
     },
     orderBy: { updatedAt: "desc" },
   });
@@ -196,6 +212,9 @@ export const getVendorProductById = cache(async (productId: string) => {
       translations: true,
       currentPrices: true,
       inventory: true,
+      images: {
+        orderBy: { sortOrder: "asc" },
+      },
       category: {
         include: {
           translations: true,

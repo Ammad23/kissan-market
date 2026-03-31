@@ -1,7 +1,12 @@
 import Link from "next/link";
 
 import { requireApprovedVendor } from "@/lib/auth";
-import { formatCurrency, formatNumber, getVendorProducts } from "@/lib/marketplace";
+import {
+  formatCurrency,
+  formatNumber,
+  getProductPrimaryImage,
+  getVendorProducts,
+} from "@/lib/marketplace";
 
 export default async function VendorProductsPage() {
   await requireApprovedVendor();
@@ -38,6 +43,7 @@ export default async function VendorProductsPage() {
             const translation = product.translations.find((item) => item.locale === "EN") ?? product.translations[0];
             const categoryTranslation = product.category.translations.find((item) => item.locale === "EN") ?? product.category.translations[0];
             const price = product.currentPrices[0];
+            const productImage = getProductPrimaryImage(product);
 
             return (
               <Link
@@ -45,16 +51,35 @@ export default async function VendorProductsPage() {
                 href={`/vendor/products/${product.id}`}
                 className="grid gap-4 rounded-[28px] border border-border bg-background p-6 transition hover:shadow-sm md:grid-cols-[1.2fr_0.8fr]"
               >
-                <div>
+                <div className="flex gap-4">
+                  <div className="h-28 w-28 shrink-0 overflow-hidden rounded-3xl bg-white">
+                    {productImage ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={productImage}
+                        alt={translation?.name ?? product.slug}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-xs font-medium text-muted">
+                        No image
+                      </div>
+                    )}
+                  </div>
                   <p className="text-sm font-medium text-brand">
                     {categoryTranslation?.name ?? product.category.slug}
                   </p>
-                  <h2 className="mt-2 text-2xl font-semibold text-brand-dark">
-                    {translation?.name ?? product.slug}
-                  </h2>
-                  <p className="mt-2 text-sm text-muted">
-                    SKU: {product.sku} · {product.defaultUnit} · {product.isActive ? "Active" : "Draft"}
-                  </p>
+                  <div>
+                    <h2 className="mt-2 text-2xl font-semibold text-brand-dark">
+                      {translation?.name ?? product.slug}
+                    </h2>
+                    <p className="mt-2 text-sm text-muted">
+                      SKU: {product.sku} · {product.defaultUnit} · {product.isActive ? "Active" : "Draft"}
+                    </p>
+                    <p className="mt-2 line-clamp-2 text-sm text-muted">
+                      {translation?.shortDescription || translation?.description || "Localized product listing"}
+                    </p>
+                  </div>
                 </div>
 
                 <div className="grid gap-3 rounded-2xl bg-white p-4 text-sm">

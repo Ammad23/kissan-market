@@ -57,12 +57,20 @@ export async function SiteHeader() {
               <SignOutButton className="rounded-full bg-brand px-4 py-2 font-semibold text-white transition hover:bg-brand-dark" />
             </>
           ) : (
-            <Link
-              href="/login"
-              className="rounded-full bg-brand px-4 py-2 font-semibold text-white transition hover:bg-brand-dark"
-            >
-              {t("login")}
-            </Link>
+            <>
+              <Link
+                href="/register"
+                className="rounded-full border border-border px-4 py-2 font-semibold text-brand-dark transition hover:bg-background"
+              >
+                Register
+              </Link>
+              <Link
+                href="/login"
+                className="rounded-full bg-brand px-4 py-2 font-semibold text-white transition hover:bg-brand-dark"
+              >
+                {t("login")}
+              </Link>
+            </>
           )}
         </div>
       </div>
