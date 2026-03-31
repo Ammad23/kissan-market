@@ -1,4 +1,5 @@
 import { LoginForm } from "@/components/auth/login-form";
+import { redirectAuthenticatedUser } from "@/lib/auth";
 
 const accountTypes = [
   "Customers sign in to place and track orders",
@@ -13,8 +14,9 @@ type LoginPageProps = {
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
+  await redirectAuthenticatedUser();
   const params = await searchParams;
-  const callbackUrl = params?.callbackUrl ?? "/";
+  const callbackUrl = params?.callbackUrl ?? "/auth/landing";
 
   return (
     <main className="mx-auto min-h-screen max-w-5xl px-6 py-12 lg:px-10">

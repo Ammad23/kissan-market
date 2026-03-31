@@ -1,0 +1,30 @@
+{
+  "common": {
+    "brand": "KISSAN",
+    "home": "Home",
+    "shop": "Shop",
+    "cart": "Cart",
+    "login": "Login",
+    "account": "Account",
+    "orders": "Orders",
+    "checkout": "Checkout",
+    "vendorDashboard": "Vendor",
+    "adminDashboard": "Admin",
+    "logout": "Sign out",
+    "emptyState": "Nothing to show yet.",
+    "locale": "Language",
+    "english": "English",
+    "urdu": "Urdu"
+  },
+  "home": {
+    "badge": "Pakistan marketplace MVP",
+    "title": "A Pakistan-first agriculture marketplace for customers, vendors, and admins.",
+    "description": "KISSAN connects customers with local produce sellers and gives vendors and platform operators a single workflow for pricing, inventory, orders, and reporting.",
+    "primaryCta": "Explore storefront",
+    "secondaryCta": "Open dashboard",
+    "storefront": "Storefront",
+    "vendor": "Vendor operations",
+    "admin": "Admin oversight",
+    "data": "Marketplace data foundation"
+  }
+}
