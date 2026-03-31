@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { LoginForm } from "@/components/auth/login-form";
 import { redirectAuthenticatedUser } from "@/lib/auth";
 
@@ -10,6 +12,7 @@ const accountTypes = [
 type LoginPageProps = {
   searchParams?: Promise<{
     callbackUrl?: string;
+    registered?: string;
   }>;
 };
 
@@ -17,6 +20,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   await redirectAuthenticatedUser();
   const params = await searchParams;
   const callbackUrl = params?.callbackUrl ?? "/auth/landing";
+  const message =
+    params?.registered === "vendor"
+      ? "Vendor account created successfully. Please wait for admin approval before using the vendor panel."
+      : params?.registered === "customer"
+        ? "Customer account created successfully. Sign in if you were not redirected automatically."
+        : "";
 
   return (
     <main className="mx-auto min-h-screen max-w-5xl px-6 py-12 lg:px-10">
@@ -34,7 +43,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </p>
 
           <div className="mt-8 max-w-md rounded-[28px] border border-border bg-background p-6">
-            <LoginForm callbackUrl={callbackUrl} />
+            <LoginForm callbackUrl={callbackUrl} message={message} />
+            <p className="mt-4 text-sm text-muted">
+              Need an account?{" "}
+              <Link href="/register" className="font-semibold text-brand-dark">
+                Register here
+              </Link>
+            </p>
           </div>
         </div>
 

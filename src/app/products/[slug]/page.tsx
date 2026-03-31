@@ -3,7 +3,12 @@ import { notFound } from "next/navigation";
 import { getLocale } from "next-intl/server";
 
 import { addToCartAction } from "@/app/actions/marketplace";
-import { formatCurrency, formatNumber, getProductBySlug } from "@/lib/marketplace";
+import {
+  formatCurrency,
+  formatNumber,
+  getProductBySlug,
+  getProductPrimaryImage,
+} from "@/lib/marketplace";
 
 type ProductPageProps = {
   params: Promise<{
@@ -25,11 +30,26 @@ export default async function ProductPage({ params }: ProductPageProps) {
     product.translations[0];
   const categoryTranslation = product.category.translations[0];
   const currentPrice = product.currentPrices[0];
+  const productImage = getProductPrimaryImage(product);
 
   return (
     <main className="mx-auto min-h-screen max-w-5xl px-6 py-12 lg:px-10">
       <div className="grid gap-8 rounded-[32px] border border-border bg-card p-8 shadow-sm lg:grid-cols-[1.2fr_0.8fr] lg:p-12">
         <div>
+          <div className="mb-6 h-72 overflow-hidden rounded-[28px] bg-background">
+            {productImage ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={productImage}
+                alt={translation?.name ?? product.slug}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center text-sm font-medium text-muted">
+                No product image
+              </div>
+            )}
+          </div>
           <p className="text-sm font-semibold uppercase tracking-wide text-brand">
             {categoryTranslation?.name ?? product.category.slug}
           </p>

@@ -31,6 +31,42 @@ function bool(value: FormDataEntryValue | null) {
   return value === "on" || value === "true";
 }
 
+async function syncProductImages(productId: string, imageUrl: string | null) {
+  if (!imageUrl) {
+    await prisma.productImage.deleteMany({
+      where: { productId },
+    });
+    return;
+  }
+
+  const existing = await prisma.productImage.findFirst({
+    where: { productId, url: imageUrl },
+    orderBy: { sortOrder: "asc" },
+  });
+
+  if (existing) {
+    await prisma.productImage.updateMany({
+      where: { productId },
+      data: {
+        sortOrder: 1,
+      },
+    });
+    return;
+  }
+
+  await prisma.productImage.deleteMany({
+    where: { productId },
+  });
+
+  await prisma.productImage.create({
+    data: {
+      productId,
+      url: imageUrl,
+      sortOrder: 1,
+    },
+  });
+}
+
 export async function createOrUpdateProductAction(formData: FormData) {
   const { session } = await requireApprovedVendor();
   const vendor = await getVendorContext();
@@ -164,6 +200,8 @@ export async function createOrUpdateProductAction(formData: FormData) {
       },
     });
 
+    await syncProductImages(existing.id, imageUrl);
+
     await prisma.priceHistory.create({
       data: {
         productId: existing.id,
@@ -217,6 +255,8 @@ export async function createOrUpdateProductAction(formData: FormData) {
       },
     },
   });
+
+  await syncProductImages(created.id, imageUrl);
 
   await prisma.priceHistory.create({
     data: {
